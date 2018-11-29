@@ -32,9 +32,19 @@
                             <outlet property="delegate" destination="S9L-cU-eQh" id="kK2-qj-UoC"/>
                         </connections>
                     </tableView>
+                    <toolbarItems/>
                     <navigationItem key="navigationItem" id="deF-gO-SEb"/>
+                    <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
+                    <connections>
+                        <outlet property="actionItem" destination="QWH-HY-EFU" id="9sq-Ha-Los"/>
+                    </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Z3T-2N-JHz" userLabel="First Responder" sceneMemberID="firstResponder"/>
+                <barButtonItem systemItem="action" id="QWH-HY-EFU">
+                    <connections>
+                        <action selector="performAction:" destination="S9L-cU-eQh" id="X2g-Wg-f16"/>
+                    </connections>
+                </barButtonItem>
             </objects>
             <point key="canvasLocation" x="2068" y="133.5832083958021"/>
         </scene>

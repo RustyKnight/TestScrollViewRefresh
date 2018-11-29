@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		12200CA321B089C400287DDD /* BannerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12200CA221B089C400287DDD /* BannerController.swift */; };
 		1238674821AF80E6009DDD47 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1238674721AF80E6009DDD47 /* AppDelegate.swift */; };
 		1238674A21AF80E6009DDD47 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1238674921AF80E6009DDD47 /* ViewController.swift */; };
 		1238674D21AF80E6009DDD47 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1238674B21AF80E6009DDD47 /* Main.storyboard */; };
@@ -35,6 +36,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		12200CA221B089C400287DDD /* BannerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerController.swift; sourceTree = "<group>"; };
 		1238674421AF80E6009DDD47 /* TestScrollView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TestScrollView.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1238674721AF80E6009DDD47 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		1238674921AF80E6009DDD47 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -76,6 +78,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		12200CA121B089AB00287DDD /* api */ = {
+			isa = PBXGroup;
+			children = (
+				12200CA221B089C400287DDD /* BannerController.swift */,
+			);
+			path = api;
+			sourceTree = "<group>";
+		};
 		1238673B21AF80E6009DDD47 = {
 			isa = PBXGroup;
 			children = (
@@ -99,6 +109,7 @@
 		1238674621AF80E6009DDD47 /* TestScrollView */ = {
 			isa = PBXGroup;
 			children = (
+				12200CA121B089AB00287DDD /* api */,
 				1238674721AF80E6009DDD47 /* AppDelegate.swift */,
 				1238674921AF80E6009DDD47 /* ViewController.swift */,
 				1238674B21AF80E6009DDD47 /* Main.storyboard */,
@@ -262,6 +273,7 @@
 				1238674A21AF80E6009DDD47 /* ViewController.swift in Sources */,
 				1238677621AF810B009DDD47 /* MainTableViewController.swift in Sources */,
 				1238674821AF80E6009DDD47 /* AppDelegate.swift in Sources */,
+				12200CA321B089C400287DDD /* BannerController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
