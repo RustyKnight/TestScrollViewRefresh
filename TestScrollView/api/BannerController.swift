@@ -94,8 +94,6 @@ public class BannerController: NSObject {
 
 	// Determines if the "scroll view" was previously been dragged
 	var wasDragged: Bool = false
-	// Determines if the refresher is in an "expanded" state
-	var ignoreRefreshUpdates: Bool = false
 
 	func update(_ refreshController: RefreshController, in scrollView: UIScrollView) {
 		let refreshView = refreshController.view
@@ -103,23 +101,30 @@ public class BannerController: NSObject {
 		
 		// This will give me the height to be used for the header view :)
 		let actualOffset = (scrollView.contentOffset.y * -1) - scrollView.safeAreaInsets.top
-		
-		// If we're expanded and offset is less then 0, we want to keep
-		// the height of the view, so it becomes "sticky"
-		if refreshState.isOpen && actualOffset < 0 {
-			let yPos = scrollView.safeAreaInsets.top + scrollView.contentOffset.y
-			refreshView.frame = CGRect(x: 0, y: yPos, width: scrollView.bounds.width, height: desiredHeight)
-		} else if actualOffset > 0 {
+		// Calculate a y position which will place the view at the "top" of the scroll view
+		// Probably also need to include the contentInsets
+		let yPos = scrollView.safeAreaInsets.top + scrollView.contentOffset.y
+
+		if refreshState.isOpen {
+			// The intent is to resize the view if the scrollview is pulled down, but prevent
+			// it from been collapsed, making it "sticky"
+			let height = max(actualOffset, desiredHeight)
+			refreshView.frame = CGRect(x: 0, y: yPos, width: scrollView.bounds.width, height: height)
+
+			let progress = height / desiredHeight
+			
+		} else if actualOffset > 0 && !refreshState.isOpen {
 			// The scrollview is been pulled down, beyond it's "0" point
-			// Calculate a y position which will place the view at the "top" of the scroll view
-			// Probably also need to include the contentInsets
-			let yPos = scrollView.safeAreaInsets.top + scrollView.contentOffset.y
+			//let yPos = scrollView.safeAreaInsets.top + scrollView.contentOffset.y
 			// Calculate the desired height based on the expanded state.
 			// If the view is already expanded, then we want to allow it to "grow" beyond its
 			// desired height, but not shrink.
 			// If it's not expanded, then we can allow it to shrink...
 			let height = refreshState.isOpen ? (actualOffset < desiredHeight ? desiredHeight : actualOffset) : actualOffset
 			refreshView.frame = CGRect(x: 0, y: yPos, width: scrollView.bounds.width, height: height)
+			
+			let progress = height / desiredHeight
+			
 			// Was the view previously been dragged, and was it dragged beyon our "desired" height?
 			// We don't want to "retrigger" a beginRefresh if the resfresh is already "open"
 			if !refreshState.isOpen && wasDragged && !scrollView.isDragging && actualOffset >= desiredHeight {
@@ -130,21 +135,23 @@ public class BannerController: NSObject {
 	}
 	
 	func beginRefreshing() {
-		guard let scrollView = scrollView, let controller = refreshController, !refreshState.isOpen, !ignoreRefreshUpdates else {
+		guard let scrollView = scrollView, let controller = refreshController, !refreshState.isOpen else {
 			return
 		}
-		print("Begin refresh")
 		let refreshView = controller.view
 		let desiredHeight = controller.desiredHeight
-		// Set the content inset to accomidate the view
-		// Need to take into consideration the existing inset
+
+		let yPos = scrollView.safeAreaInsets.top + scrollView.contentOffset.y
+
+		// I had been setting this in the completion block of the animation, but
+		// it was causing this function to be recalled
+		self.refreshState = .open
 		scrollView.bringSubviewToFront(refreshView)
+		let frame = refreshView.frame
+		refreshView.frame = CGRect(x: 0, y: yPos, width: scrollView.bounds.width, height: frame.height)
 		UIView.animate(withDuration: 0.3, delay: 0.0, options: .curveEaseInOut, animations: {
-			self.ignoreRefreshUpdates = true
 			scrollView.contentInset.top += desiredHeight
 		}) { (_) in
-			self.ignoreRefreshUpdates = false
-			self.refreshState = .open
 			controller.beginRefreshing()
 		}
 	}

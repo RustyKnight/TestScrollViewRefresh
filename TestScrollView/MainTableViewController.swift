@@ -10,8 +10,9 @@ import UIKit
 
 class MainTableViewController: UITableViewController {
 	
-	@IBOutlet var actionItem: UIBarButtonItem!
-	
+	@IBOutlet var endItem: UIBarButtonItem!
+	@IBOutlet var beginItem: UIBarButtonItem!
+
 //	fileprivate static var context = "ESRefreshKVOContext"
 //	fileprivate static let offsetKeyPath = "contentOffset"
 //	fileprivate static let contentSizeKeyPath = "contentSize"
@@ -23,7 +24,7 @@ class MainTableViewController: UITableViewController {
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		
-		navigationItem.rightBarButtonItem = actionItem
+		navigationItem.rightBarButtonItems = [endItem, beginItem]
 		
 		bannerController.refreshController = SimpleRefreshController()
 		bannerController.install(on: tableView)
@@ -47,9 +48,15 @@ class MainTableViewController: UITableViewController {
 		return 0
 	}
 	
-	@IBAction func performAction(_ sender: Any) {
+	@IBAction func endRefreshing(_ sender: Any) {
 		bannerController.endRefreshing()
 	}
+
+	@IBAction func beginRefreshing(_ sender: Any) {
+		print("begin")
+		bannerController.beginRefreshing()
+	}
+
 	//	var wasDragged: Bool = false
 //	var isExpanded: Bool = false
 //

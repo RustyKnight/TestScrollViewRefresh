@@ -36,13 +36,19 @@
                     <navigationItem key="navigationItem" id="deF-gO-SEb"/>
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
-                        <outlet property="actionItem" destination="QWH-HY-EFU" id="9sq-Ha-Los"/>
+                        <outlet property="beginItem" destination="13Q-e8-u8c" id="Viv-u1-D2E"/>
+                        <outlet property="endItem" destination="QWH-HY-EFU" id="Vyf-L3-3w2"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Z3T-2N-JHz" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <barButtonItem systemItem="action" id="QWH-HY-EFU">
+                <barButtonItem image="Begin" largeContentSizeImage="Begin" id="13Q-e8-u8c">
                     <connections>
-                        <action selector="performAction:" destination="S9L-cU-eQh" id="X2g-Wg-f16"/>
+                        <action selector="beginRefreshing:" destination="S9L-cU-eQh" id="zU2-C5-1AW"/>
+                    </connections>
+                </barButtonItem>
+                <barButtonItem image="Exit" largeContentSizeImage="Exit" id="QWH-HY-EFU">
+                    <connections>
+                        <action selector="endRefreshing:" destination="S9L-cU-eQh" id="hc4-bc-l5Q"/>
                     </connections>
                 </barButtonItem>
             </objects>
@@ -67,4 +73,8 @@
             <point key="canvasLocation" x="1128.8" y="133.5832083958021"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="Begin" width="25" height="25"/>
+        <image name="Exit" width="25" height="25"/>
+    </resources>
 </document>

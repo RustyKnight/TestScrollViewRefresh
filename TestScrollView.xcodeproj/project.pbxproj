@@ -8,10 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		12200CA321B089C400287DDD /* BannerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12200CA221B089C400287DDD /* BannerController.swift */; };
+		12200CA521B0ADDD00287DDD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 12200CA421B0ADDD00287DDD /* Assets.xcassets */; };
 		1238674821AF80E6009DDD47 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1238674721AF80E6009DDD47 /* AppDelegate.swift */; };
 		1238674A21AF80E6009DDD47 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1238674921AF80E6009DDD47 /* ViewController.swift */; };
 		1238674D21AF80E6009DDD47 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1238674B21AF80E6009DDD47 /* Main.storyboard */; };
-		1238674F21AF80E7009DDD47 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1238674E21AF80E7009DDD47 /* Assets.xcassets */; };
 		1238675221AF80E7009DDD47 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1238675021AF80E7009DDD47 /* LaunchScreen.storyboard */; };
 		1238675D21AF80E7009DDD47 /* TestScrollViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1238675C21AF80E7009DDD47 /* TestScrollViewTests.swift */; };
 		1238676821AF80E7009DDD47 /* TestScrollViewUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1238676721AF80E7009DDD47 /* TestScrollViewUITests.swift */; };
@@ -37,11 +37,11 @@
 
 /* Begin PBXFileReference section */
 		12200CA221B089C400287DDD /* BannerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerController.swift; sourceTree = "<group>"; };
+		12200CA421B0ADDD00287DDD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1238674421AF80E6009DDD47 /* TestScrollView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TestScrollView.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1238674721AF80E6009DDD47 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		1238674921AF80E6009DDD47 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		1238674C21AF80E6009DDD47 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		1238674E21AF80E7009DDD47 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1238675121AF80E7009DDD47 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		1238675321AF80E7009DDD47 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1238675821AF80E7009DDD47 /* TestScrollViewTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TestScrollViewTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -109,11 +109,11 @@
 		1238674621AF80E6009DDD47 /* TestScrollView */ = {
 			isa = PBXGroup;
 			children = (
+				12200CA421B0ADDD00287DDD /* Assets.xcassets */,
 				12200CA121B089AB00287DDD /* api */,
 				1238674721AF80E6009DDD47 /* AppDelegate.swift */,
 				1238674921AF80E6009DDD47 /* ViewController.swift */,
 				1238674B21AF80E6009DDD47 /* Main.storyboard */,
-				1238674E21AF80E7009DDD47 /* Assets.xcassets */,
 				1238675021AF80E7009DDD47 /* LaunchScreen.storyboard */,
 				1238675321AF80E7009DDD47 /* Info.plist */,
 				1238677521AF810B009DDD47 /* MainTableViewController.swift */,
@@ -244,7 +244,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1238675221AF80E7009DDD47 /* LaunchScreen.storyboard in Resources */,
-				1238674F21AF80E7009DDD47 /* Assets.xcassets in Resources */,
+				12200CA521B0ADDD00287DDD /* Assets.xcassets in Resources */,
 				1238674D21AF80E6009DDD47 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
