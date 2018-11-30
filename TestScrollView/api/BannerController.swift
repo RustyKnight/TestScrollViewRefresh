@@ -9,7 +9,15 @@
 import Foundation
 import UIKit
 
-public protocol RefreshController {
+// Great name 🙄
+// Basically this provides an observer that is notified when the
+// "expandable" controller is updated, as a percentage.  The delta
+// may be greater then 1, but should never be less then zero
+public protocol ExpandableController {
+	func expanded(by delta: CGFloat)
+}
+
+public protocol RefreshableController: ExpandableController {
 	var view: UIView { get }
 	var desiredHeight: CGFloat { get }
 	
@@ -38,7 +46,7 @@ public class BannerController: NSObject {
 	
 	var refreshState: BannerState = .closed
 	
-	open var refreshController: RefreshController? {
+	open var refreshController: RefreshableController? {
 		didSet {
 			uninstallRefresherIfNeeded(oldValue)
 			installRefresherIfNeeded()
@@ -57,7 +65,7 @@ public class BannerController: NSObject {
 		installRefresherIfNeeded()
 	}
 	
-	func uninstallRefresherIfNeeded(_ controller: RefreshController?) {
+	func uninstallRefresherIfNeeded(_ controller: RefreshableController?) {
 		guard let controller = controller else {
 			return
 		}
@@ -95,7 +103,7 @@ public class BannerController: NSObject {
 	// Determines if the "scroll view" was previously been dragged
 	var wasDragged: Bool = false
 
-	func update(_ refreshController: RefreshController, in scrollView: UIScrollView) {
+	func update(_ refreshController: RefreshableController, in scrollView: UIScrollView) {
 		let refreshView = refreshController.view
 		let desiredHeight = refreshController.desiredHeight
 		
@@ -112,6 +120,8 @@ public class BannerController: NSObject {
 			refreshView.frame = CGRect(x: 0, y: yPos, width: scrollView.bounds.width, height: height)
 
 			let progress = height / desiredHeight
+//			print("1 height = \(height); desiredHeight = \(desiredHeight); progress = \(progress)")
+			refreshController.expanded(by: progress)
 			
 		} else if actualOffset > 0 && !refreshState.isOpen {
 			// The scrollview is been pulled down, beyond it's "0" point
@@ -124,16 +134,21 @@ public class BannerController: NSObject {
 			refreshView.frame = CGRect(x: 0, y: yPos, width: scrollView.bounds.width, height: height)
 			
 			let progress = height / desiredHeight
+//			print("2 height = \(height); desiredHeight = \(desiredHeight); progress = \(progress)")
 			
+			refreshController.expanded(by: progress)
+
 			// Was the view previously been dragged, and was it dragged beyon our "desired" height?
 			// We don't want to "retrigger" a beginRefresh if the resfresh is already "open"
 			if !refreshState.isOpen && wasDragged && !scrollView.isDragging && actualOffset >= desiredHeight {
 				// This can be used to animate the view open as well :)
 				beginRefreshing()
 			}
+		} else {
+			print("...")
 		}
 	}
-	
+
 	func beginRefreshing() {
 		guard let scrollView = scrollView, let controller = refreshController, !refreshState.isOpen else {
 			return
@@ -149,11 +164,13 @@ public class BannerController: NSObject {
 		scrollView.bringSubviewToFront(refreshView)
 		let frame = refreshView.frame
 		refreshView.frame = CGRect(x: 0, y: yPos, width: scrollView.bounds.width, height: frame.height)
+
 		UIView.animate(withDuration: 0.3, delay: 0.0, options: .curveEaseInOut, animations: {
 			scrollView.contentInset.top += desiredHeight
 		}) { (_) in
 			controller.beginRefreshing()
 		}
+		
 	}
 	
 	func endRefreshing() {
@@ -167,12 +184,12 @@ public class BannerController: NSObject {
 		// Need to take into consideration the existing inset
 		scrollView.bringSubviewToFront(refreshView)
 		let yPos = scrollView.safeAreaInsets.top + scrollView.contentOffset.y + scrollView.contentInset.top
+		controller.endRefreshing()
 		UIView.animate(withDuration: 0.3, delay: 0.0, options: .curveEaseInOut, animations: {
 			scrollView.contentInset.top -= desiredHeight
 			refreshView.frame = CGRect(x: 0, y: yPos, width: scrollView.bounds.width, height: 0)
 		}) { (_) in
 			self.refreshState = .closed
-			controller.endRefreshing()
 		}
 	}
 }

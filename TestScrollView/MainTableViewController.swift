@@ -107,7 +107,7 @@ class MainTableViewController: UITableViewController {
 //	}
 }
 
-class SimpleRefreshController: UIView, RefreshController {
+class SimpleRefreshController: UIView, RefreshableController {
 
 	var view: UIView { return self }
 	var desiredHeight: CGFloat { return 100 }
@@ -136,5 +136,9 @@ class SimpleRefreshController: UIView, RefreshController {
 	
 	func endRefreshing() {
 	}
-	
+
+	func expanded(by delta: CGFloat) {
+		print(">> \(delta)")
+	}
+
 }
