@@ -72,6 +72,9 @@ public class BannerController: NSObject {
   
 	public func install(on scrollView: UIScrollView) {
 		self.scrollView = scrollView
+    
+//    scrollView.panGestureRecognizer.addTarget(self, action: #selector(scrollViewPanned))
+    
 		scrollView.addObserver(self, forKeyPath: KeyPath.contentOffset.rawValue, options: [.initial, .new], context: &BannerController.context)
 		scrollView.addObserver(self, forKeyPath: KeyPath.contentSize.rawValue, options: [.initial, .new], context: &BannerController.context)
 		
@@ -113,9 +116,28 @@ public class BannerController: NSObject {
 		}
 		wasDragged = scrollView.isDragging
 	}
+  
+//  @objc func scrollViewPanned(_ geasture: UIPanGestureRecognizer) {
+//    if geasture.state == .began {
+//      print("began")
+//    } else if geasture.state == .ended {
+//      print("ended")
+//    } else if geasture.state == .cancelled {
+//      print("cancelled")
+//    } else if geasture.state == .changed {
+//      print("changed")
+//    } else if geasture.state == .failed {
+//      print("failed")
+//    } else if geasture.state == .failed {
+//      print("failed")
+//    } else if geasture.state == .recognized {
+//      print("recognized")
+//    }
+//  }
 
 	// Determines if the "scroll view" was previously been dragged
 	var wasDragged: Bool = false
+  var lastOffset: CGFloat?
 
 	func update(_ refreshController: RefreshableController, in scrollView: UIScrollView) {
 		let refreshView = refreshController.view
@@ -137,36 +159,47 @@ public class BannerController: NSObject {
 			refreshController.expanded(by: progress)
 			
 		} else if actualOffset > 0 && !refreshState.isOpen && refreshState != .relaxing {
-			// The scrollview is been pulled down, beyond it's "0" point
-			//let yPos = scrollView.safeAreaInsets.top + scrollView.contentOffset.y
-			// Calculate the desired height based on the expanded state.
-			// If the view is already expanded, then we want to allow it to "grow" beyond its
-			// desired height, but not shrink.
-			// If it's not expanded, then we can allow it to shrink...
-			let height = refreshState.isOpen ? (actualOffset < desiredHeight ? desiredHeight : actualOffset) : actualOffset
-			refreshView.frame = CGRect(x: 0, y: yPos, width: scrollView.bounds.width, height: height)
-			
-			let progress = height / desiredHeight
-			
-			refreshController.expanded(by: progress)
+      // While been dragged, keep track of the last offset height, as this
+      // changes dramatically when released
+      if scrollView.isDragging {
+        lastOffset = actualOffset
+      }
 
-			// Was the view previously been dragged, and was it dragged beyon our "desired" height?
-			// We don't want to "retrigger" a beginRefresh if the resfresh is already "open"
+      // Has the user stopped dragging and does the view need to be "relaxed" back into position.
+      // Essentially the user needs to drag beyond the desired height of the view before it becomes
+      // sticky
 			if !refreshState.isOpen && wasDragged && !scrollView.isDragging && actualOffset >= desiredHeight {
-				// This can be used to animate the view open as well :)
+        // Relaxing into position, stops some of the other code from
+        // interacting while the relax animation is running
         refreshState = .relaxing
-        
+        print("Relaxing")
+
+        // Set the frame size based on the last offset position.  This is an attempt to stop the UI from
+        // flickering as the actualOffset is not the same as the offset when the user released the view
+        refreshView.frame = CGRect(x: 0, y: yPos, width: scrollView.bounds.width, height: lastOffset ?? actualOffset)
+        lastOffset = nil
+
+        // Stop the scroll view from bouncing, to help the animation run more smoothly
+        let shouldBounce = scrollView.bounces
         scrollView.bounces = false
-        self.beginRefreshing(offsetHeight: height) {
-          scrollView.bounces = true
+        self.beginRefreshing {
+          // reset the bounce
+          scrollView.bounces = shouldBounce
         }
-//        let deadline = DispatchTime.now() + .seconds(1)
-//        DispatchQueue.main.asyncAfter(deadline: deadline) {
-//          self.beginRefreshing {
-//            scrollView.bounces = true
-//          }
-//        }
-			}
+      } else {
+        // The scrollview is been pulled down, beyond it's "0" point
+        //let yPos = scrollView.safeAreaInsets.top + scrollView.contentOffset.y
+        // Calculate the desired height based on the expanded state.
+        // If the view is already expanded, then we want to allow it to "grow" beyond its
+        // desired height, but not shrink.
+        // If it's not expanded, then we can allow it to shrink...
+        let height = refreshState.isOpen ? (actualOffset < desiredHeight ? desiredHeight : actualOffset) : actualOffset
+        refreshView.frame = CGRect(x: 0, y: yPos, width: scrollView.bounds.width, height: height)
+        
+        let progress = height / desiredHeight
+        
+        refreshController.expanded(by: progress)
+      }
 		}
 	}
   
