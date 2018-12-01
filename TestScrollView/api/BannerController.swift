@@ -144,12 +144,10 @@ public class BannerController: NSObject {
 				// This can be used to animate the view open as well :)
 				beginRefreshing()
 			}
-		} else {
-			print("...")
 		}
 	}
 
-	func beginRefreshing() {
+	public func beginRefreshing() {
 		guard let scrollView = scrollView, let controller = refreshController, !refreshState.isOpen else {
 			return
 		}
@@ -161,9 +159,26 @@ public class BannerController: NSObject {
 		// I had been setting this in the completion block of the animation, but
 		// it was causing this function to be recalled
 		self.refreshState = .open
+    
+    // The frame size is set here as beginRefresh may be called externally
 		scrollView.bringSubviewToFront(refreshView)
 		let frame = refreshView.frame
 		refreshView.frame = CGRect(x: 0, y: yPos, width: scrollView.bounds.width, height: frame.height)
+
+    // The expected range of change
+    let range: ClosedRange<CGFloat> = min(frame.height, desiredHeight)...max(frame.height, desiredHeight)
+    // This is annoying.  Basically there doesn't seem to be an "easy" way to get the progression of a animation,
+    // instead, it's "suggested" that a CADisplayLink be used to "mimic" the process
+    let animator = DurationAnimator(duration: 0.3, timingFunction: .easeInEaseOut, ticker: { (animator, progress) in
+      // Here we determine if the range should be reversed or not based on the difference between the
+      // start and end of the range
+      let value = range.value(at: progress, reversed: frame.height > desiredHeight)
+      let delta = value / desiredHeight
+      controller.expanded(by: delta)
+    }) { (_) in
+      controller.expanded(by: 1.0)
+    }
+    animator.start()
 
 		UIView.animate(withDuration: 0.3, delay: 0.0, options: .curveEaseInOut, animations: {
 			scrollView.contentInset.top += desiredHeight
@@ -173,7 +188,7 @@ public class BannerController: NSObject {
 		
 	}
 	
-	func endRefreshing() {
+	public func endRefreshing() {
 		guard let scrollView = scrollView, let controller = refreshController, refreshState.isOpen else {
 			return
 		}
@@ -185,6 +200,22 @@ public class BannerController: NSObject {
 		scrollView.bringSubviewToFront(refreshView)
 		let yPos = scrollView.safeAreaInsets.top + scrollView.contentOffset.y + scrollView.contentInset.top
 		controller.endRefreshing()
+    
+    let frame = refreshView.frame
+    // The expected range over which the frame will change
+    let range: ClosedRange<CGFloat> = CGFloat(0)...frame.height
+    // This is annoying.  Basically there doesn't seem to be an "easy" way to get the progression of a animation,
+    // instead, it's "suggested" that a CADisplayLink be used to "mimic" the process
+    let animator = DurationAnimator(duration: 0.3, timingFunction: .easeInEaseOut, ticker: { (animator, progress) in
+      // This is always going to be reversed, as we should be going from big to small
+      let value = range.value(at: progress, reversed: true)
+      let delta = value / desiredHeight
+      controller.expanded(by: delta)
+    }) { (_) in
+      controller.expanded(by: 0.0)
+    }
+    animator.start()
+    
 		UIView.animate(withDuration: 0.3, delay: 0.0, options: .curveEaseInOut, animations: {
 			scrollView.contentInset.top -= desiredHeight
 			refreshView.frame = CGRect(x: 0, y: yPos, width: scrollView.bounds.width, height: 0)
