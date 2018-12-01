@@ -16,6 +16,8 @@
 		1238675D21AF80E7009DDD47 /* TestScrollViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1238675C21AF80E7009DDD47 /* TestScrollViewTests.swift */; };
 		1238676821AF80E7009DDD47 /* TestScrollViewUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1238676721AF80E7009DDD47 /* TestScrollViewUITests.swift */; };
 		1238677621AF810B009DDD47 /* MainTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1238677521AF810B009DDD47 /* MainTableViewController.swift */; };
+		707E173421B23EF30057A8D2 /* TestView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 707E173321B23EF30057A8D2 /* TestView.xib */; };
+		707E173621B23FD40057A8D2 /* TestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 707E173521B23FD40057A8D2 /* TestView.swift */; };
 		70FFBECD21B0F75900DE9D3A /* Range+Animation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70FFBEC921B0F75900DE9D3A /* Range+Animation.swift */; };
 		70FFBED021B0F75900DE9D3A /* DurationAnimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70FFBECC21B0F75900DE9D3A /* DurationAnimator.swift */; };
 		70FFBED421B0F8A000DE9D3A /* Animator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70FFBED221B0F8A000DE9D3A /* Animator.swift */; };
@@ -55,6 +57,8 @@
 		1238676721AF80E7009DDD47 /* TestScrollViewUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestScrollViewUITests.swift; sourceTree = "<group>"; };
 		1238676921AF80E7009DDD47 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1238677521AF810B009DDD47 /* MainTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTableViewController.swift; sourceTree = "<group>"; };
+		707E173321B23EF30057A8D2 /* TestView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TestView.xib; sourceTree = "<group>"; };
+		707E173521B23FD40057A8D2 /* TestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestView.swift; sourceTree = "<group>"; };
 		70FFBEC921B0F75900DE9D3A /* Range+Animation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Range+Animation.swift"; sourceTree = "<group>"; };
 		70FFBECC21B0F75900DE9D3A /* DurationAnimator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DurationAnimator.swift; sourceTree = "<group>"; };
 		70FFBED221B0F8A000DE9D3A /* Animator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Animator.swift; sourceTree = "<group>"; };
@@ -126,6 +130,8 @@
 				1238675021AF80E7009DDD47 /* LaunchScreen.storyboard */,
 				1238675321AF80E7009DDD47 /* Info.plist */,
 				1238677521AF810B009DDD47 /* MainTableViewController.swift */,
+				707E173321B23EF30057A8D2 /* TestView.xib */,
+				707E173521B23FD40057A8D2 /* TestView.swift */,
 			);
 			path = TestScrollView;
 			sourceTree = "<group>";
@@ -263,6 +269,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				707E173421B23EF30057A8D2 /* TestView.xib in Resources */,
 				1238675221AF80E7009DDD47 /* LaunchScreen.storyboard in Resources */,
 				12200CA521B0ADDD00287DDD /* Assets.xcassets in Resources */,
 				1238674D21AF80E6009DDD47 /* Main.storyboard in Resources */,
@@ -296,6 +303,7 @@
 				1238677621AF810B009DDD47 /* MainTableViewController.swift in Sources */,
 				1238674821AF80E6009DDD47 /* AppDelegate.swift in Sources */,
 				70FFBED521B0F8A000DE9D3A /* LinearAnimator.swift in Sources */,
+				707E173621B23FD40057A8D2 /* TestView.swift in Sources */,
 				70FFBED421B0F8A000DE9D3A /* Animator.swift in Sources */,
 				12200CA321B089C400287DDD /* BannerController.swift in Sources */,
 			);

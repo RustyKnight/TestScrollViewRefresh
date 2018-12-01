@@ -56,6 +56,8 @@ public class BannerController: NSObject {
 	// I was hoping to avoid this...
 	weak var scrollView: UIScrollView?
 	
+  var animationDuration: TimeInterval = 0.3
+  
 	public func install(on scrollView: UIScrollView) {
 		self.scrollView = scrollView
 		scrollView.addObserver(self, forKeyPath: KeyPath.contentOffset.rawValue, options: [.initial, .new], context: &BannerController.context)
@@ -146,6 +148,19 @@ public class BannerController: NSObject {
 			}
 		}
 	}
+  
+  // This basically distills the process of generating the
+  // expansion callback so that both expanding and collapsing run through the same process
+  func size(controller: RefreshableController, scrollView: UIScrollView, range: ClosedRange<CGFloat>, at progress: Double, reversed: Bool = false) {
+    let desiredHeight = controller.desiredHeight
+    
+    let value = range.value(at: progress, reversed: reversed)
+    let delta = value / desiredHeight
+    
+    let yPos = scrollView.safeAreaInsets.top + scrollView.contentOffset.y
+    controller.view.frame = CGRect(x: 0, y: yPos, width: scrollView.bounds.width, height: value)
+    controller.expanded(by: delta)
+  }
 
 	public func beginRefreshing() {
 		guard let scrollView = scrollView, let controller = refreshController, !refreshState.isOpen else {
@@ -162,25 +177,24 @@ public class BannerController: NSObject {
     
     // The frame size is set here as beginRefresh may be called externally
 		scrollView.bringSubviewToFront(refreshView)
-		let frame = refreshView.frame
-		refreshView.frame = CGRect(x: 0, y: yPos, width: scrollView.bounds.width, height: frame.height)
+
+    let startHeight = refreshView.frame.height
+    refreshView.frame = CGRect(x: 0, y: yPos, width: scrollView.bounds.width, height: startHeight)
 
     // The expected range of change
-    let range: ClosedRange<CGFloat> = min(frame.height, desiredHeight)...max(frame.height, desiredHeight)
+    let range: ClosedRange<CGFloat> = min(startHeight, desiredHeight)...max(startHeight, desiredHeight)
     // This is annoying.  Basically there doesn't seem to be an "easy" way to get the progression of a animation,
     // instead, it's "suggested" that a CADisplayLink be used to "mimic" the process
-    let animator = DurationAnimator(duration: 0.3, timingFunction: .easeInEaseOut, ticker: { (animator, progress) in
+    let animator = DurationAnimator(duration: animationDuration, timingFunction: .easeInEaseOut, ticker: { (animator, progress) in
       // Here we determine if the range should be reversed or not based on the difference between the
       // start and end of the range
-      let value = range.value(at: progress, reversed: frame.height > desiredHeight)
-      let delta = value / desiredHeight
-      controller.expanded(by: delta)
+      self.size(controller: controller, scrollView: scrollView, range: range, at: progress, reversed: startHeight > desiredHeight)
     }) { (_) in
-      controller.expanded(by: 1.0)
+      self.size(controller: controller, scrollView: scrollView, range: range, at: 1.0, reversed: startHeight > desiredHeight)
     }
     animator.start()
 
-		UIView.animate(withDuration: 0.3, delay: 0.0, options: .curveEaseInOut, animations: {
+		UIView.animate(withDuration: animationDuration, delay: 0.0, options: .curveEaseInOut, animations: {
 			scrollView.contentInset.top += desiredHeight
 		}) { (_) in
 			controller.beginRefreshing()
@@ -198,7 +212,6 @@ public class BannerController: NSObject {
 		// Set the content inset to accomidate the view
 		// Need to take into consideration the existing inset
 		scrollView.bringSubviewToFront(refreshView)
-		let yPos = scrollView.safeAreaInsets.top + scrollView.contentOffset.y + scrollView.contentInset.top
 		controller.endRefreshing()
     
     let frame = refreshView.frame
@@ -206,19 +219,16 @@ public class BannerController: NSObject {
     let range: ClosedRange<CGFloat> = CGFloat(0)...frame.height
     // This is annoying.  Basically there doesn't seem to be an "easy" way to get the progression of a animation,
     // instead, it's "suggested" that a CADisplayLink be used to "mimic" the process
-    let animator = DurationAnimator(duration: 0.3, timingFunction: .easeInEaseOut, ticker: { (animator, progress) in
+    let animator = DurationAnimator(duration: animationDuration, timingFunction: .easeInEaseOut, ticker: { (animator, progress) in
       // This is always going to be reversed, as we should be going from big to small
-      let value = range.value(at: progress, reversed: true)
-      let delta = value / desiredHeight
-      controller.expanded(by: delta)
+      self.size(controller: controller, scrollView: scrollView, range: range, at: progress, reversed: true)
     }) { (_) in
-      controller.expanded(by: 0.0)
+      self.size(controller: controller, scrollView: scrollView, range: range, at: 0.0)
     }
     animator.start()
     
-		UIView.animate(withDuration: 0.3, delay: 0.0, options: .curveEaseInOut, animations: {
+		UIView.animate(withDuration: animationDuration, delay: 0.0, options: .curveEaseInOut, animations: {
 			scrollView.contentInset.top -= desiredHeight
-			refreshView.frame = CGRect(x: 0, y: yPos, width: scrollView.bounds.width, height: 0)
 		}) { (_) in
 			self.refreshState = .closed
 		}

@@ -25,8 +25,12 @@ class MainTableViewController: UITableViewController {
 		super.viewDidLoad()
 		
 		navigationItem.rightBarButtonItems = [endItem, beginItem]
+    
+    guard let testView = Bundle.main.loadNibNamed("TestView", owner: self, options: nil)?[0] as? TestView else {
+      fatalError("Could not load main view")
+    }
 		
-		bannerController.refreshController = SimpleRefreshController()
+		bannerController.refreshController = testView//SimpleRefreshController()
 		bannerController.install(on: tableView)
 		
 //		refreshView.backgroundColor = UIColor.red
