@@ -25,6 +25,16 @@ public protocol RefreshableController: ExpandableController {
 	func endRefreshing()
 }
 
+public typealias Complition = () -> Void
+
+class Snapshot {
+  let insetTop: CGFloat
+  
+  init(insetTop: CGFloat) {
+    self.insetTop = insetTop
+  }
+}
+
 public class BannerController: NSObject {
 	
 	enum BannerState {
@@ -122,7 +132,6 @@ public class BannerController: NSObject {
 			refreshView.frame = CGRect(x: 0, y: yPos, width: scrollView.bounds.width, height: height)
 
 			let progress = height / desiredHeight
-//			print("1 height = \(height); desiredHeight = \(desiredHeight); progress = \(progress)")
 			refreshController.expanded(by: progress)
 			
 		} else if actualOffset > 0 && !refreshState.isOpen {
@@ -136,7 +145,6 @@ public class BannerController: NSObject {
 			refreshView.frame = CGRect(x: 0, y: yPos, width: scrollView.bounds.width, height: height)
 			
 			let progress = height / desiredHeight
-//			print("2 height = \(height); desiredHeight = \(desiredHeight); progress = \(progress)")
 			
 			refreshController.expanded(by: progress)
 
@@ -144,28 +152,45 @@ public class BannerController: NSObject {
 			// We don't want to "retrigger" a beginRefresh if the resfresh is already "open"
 			if !refreshState.isOpen && wasDragged && !scrollView.isDragging && actualOffset >= desiredHeight {
 				// This can be used to animate the view open as well :)
-				beginRefreshing()
+        
+        scrollView.bounces = false
+        DispatchQueue.main.async {
+          self.beginRefreshing {
+            scrollView.bounces = true
+          }
+        }
 			}
 		}
 	}
   
   // This basically distills the process of generating the
   // expansion callback so that both expanding and collapsing run through the same process
-  func size(controller: RefreshableController, scrollView: UIScrollView, range: ClosedRange<CGFloat>, at progress: Double, reversed: Bool = false) {
+  func size(controller: RefreshableController,
+            scrollView: UIScrollView,
+            snapShot: Snapshot,
+            range: ClosedRange<CGFloat>,
+            at progress: Double,
+            reversed: Bool = false) {
     let desiredHeight = controller.desiredHeight
-    
+
     let value = range.value(at: progress, reversed: reversed)
     let delta = value / desiredHeight
     
     let yPos = scrollView.safeAreaInsets.top + scrollView.contentOffset.y
+
+    // Need to set this first, otherwise it will effect the size of the view
+    scrollView.contentInset.top = snapShot.insetTop + value
+
     controller.view.frame = CGRect(x: 0, y: yPos, width: scrollView.bounds.width, height: value)
     controller.expanded(by: delta)
+    
   }
 
-	public func beginRefreshing() {
+  public func beginRefreshing(then: Complition? = nil) {
 		guard let scrollView = scrollView, let controller = refreshController, !refreshState.isOpen else {
 			return
 		}
+    
 		let refreshView = controller.view
 		let desiredHeight = controller.desiredHeight
 
@@ -183,22 +208,29 @@ public class BannerController: NSObject {
 
     // The expected range of change
     let range: ClosedRange<CGFloat> = min(startHeight, desiredHeight)...max(startHeight, desiredHeight)
-    // This is annoying.  Basically there doesn't seem to be an "easy" way to get the progression of a animation,
-    // instead, it's "suggested" that a CADisplayLink be used to "mimic" the process
+    
+    let snapShot = Snapshot(insetTop: scrollView.contentInset.top)
+
     let animator = DurationAnimator(duration: animationDuration, timingFunction: .easeInEaseOut, ticker: { (animator, progress) in
       // Here we determine if the range should be reversed or not based on the difference between the
       // start and end of the range
-      self.size(controller: controller, scrollView: scrollView, range: range, at: progress, reversed: startHeight > desiredHeight)
+      self.size(controller: controller,
+                scrollView: scrollView,
+                snapShot: snapShot,
+                range: range,
+                at: progress,
+                reversed: startHeight > desiredHeight)
     }) { (_) in
-      self.size(controller: controller, scrollView: scrollView, range: range, at: 1.0, reversed: startHeight > desiredHeight)
+      self.size(controller: controller,
+                scrollView: scrollView,
+                snapShot: snapShot,
+                range: range,
+                at: 1.0,
+                reversed: startHeight > desiredHeight)
+      controller.beginRefreshing()
+      then?()
     }
     animator.start()
-
-		UIView.animate(withDuration: animationDuration, delay: 0.0, options: .curveEaseInOut, animations: {
-			scrollView.contentInset.top += desiredHeight
-		}) { (_) in
-			controller.beginRefreshing()
-		}
 		
 	}
 	
@@ -207,7 +239,7 @@ public class BannerController: NSObject {
 			return
 		}
 		let refreshView = controller.view
-		let desiredHeight = controller.desiredHeight
+		//let desiredHeight = controller.desiredHeight
 
 		// Set the content inset to accomidate the view
 		// Need to take into consideration the existing inset
@@ -217,20 +249,27 @@ public class BannerController: NSObject {
     let frame = refreshView.frame
     // The expected range over which the frame will change
     let range: ClosedRange<CGFloat> = CGFloat(0)...frame.height
-    // This is annoying.  Basically there doesn't seem to be an "easy" way to get the progression of a animation,
-    // instead, it's "suggested" that a CADisplayLink be used to "mimic" the process
+    
+    let snapShot = Snapshot(insetTop: scrollView.contentInset.top - controller.desiredHeight)
+
     let animator = DurationAnimator(duration: animationDuration, timingFunction: .easeInEaseOut, ticker: { (animator, progress) in
       // This is always going to be reversed, as we should be going from big to small
-      self.size(controller: controller, scrollView: scrollView, range: range, at: progress, reversed: true)
+      self.size(controller: controller,
+                scrollView: scrollView,
+                snapShot: snapShot,
+                range: range,
+                at: progress,
+                reversed: true)
+      scrollView.contentInset.top = refreshView.frame.height
     }) { (_) in
-      self.size(controller: controller, scrollView: scrollView, range: range, at: 0.0)
+      self.size(controller: controller,
+                scrollView: scrollView,
+                snapShot: snapShot,
+                range: range,
+                at: 1.0,
+                reversed: true)
+      self.refreshState = .closed
     }
     animator.start()
-    
-		UIView.animate(withDuration: animationDuration, delay: 0.0, options: .curveEaseInOut, animations: {
-			scrollView.contentInset.top -= desiredHeight
-		}) { (_) in
-			self.refreshState = .closed
-		}
 	}
 }

@@ -11,10 +11,24 @@ import UIKit
 class TestView: UIView, RefreshableController {
   
   @IBOutlet weak var label: UILabel!
-
+  @IBOutlet weak var blurView: UIVisualEffectView!
+  
   var view: UIView { return self }
   
   var desiredHeight: CGFloat = 100
+  
+  var gradientLayer: CAGradientLayer = {
+    let layer = CAGradientLayer()
+    layer.colors = [
+      UIColor.red.cgColor,
+      UIColor.yellow.cgColor,
+      UIColor.green.cgColor
+    ]
+    layer.locations = [0, 0.5, 1]
+    layer.startPoint = CGPoint(x: 0, y: 0)
+    layer.endPoint = CGPoint(x: 1, y: 0)
+    return layer
+  }()
   
   override func awakeFromNib() {
     super.awakeFromNib()
@@ -23,6 +37,10 @@ class TestView: UIView, RefreshableController {
     
     label.transform = CGAffineTransform(rotationAngle: -180.degreesToRadians)
     label.translatesAutoresizingMaskIntoConstraints = false
+    
+    layer.insertSublayer(gradientLayer, at: 0)
+    
+    backgroundColor = UIColor.blue
   }
   
   func beginRefreshing() {
@@ -34,8 +52,9 @@ class TestView: UIView, RefreshableController {
   func expanded(by delta: CGFloat) {
     let angle = -180 * (1.0 - delta)
     let scale = min(max(0, delta), 1.0)
-    print("! \(delta) ~= \(angle) @ \(scale)")
     label.transform = CGAffineTransform(rotationAngle: angle.degreesToRadians).concatenating(CGAffineTransform(scaleX: scale, y: scale))
+    gradientLayer.frame = view.bounds
+    gradientLayer.removeAllAnimations()
     setNeedsDisplay()
   }
   
