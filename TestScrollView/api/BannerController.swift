@@ -40,6 +40,8 @@ public class BannerController: NSObject {
 	enum BannerState {
 		case open
 		case closed
+    
+    case relaxing
 		
 		// Call me lazy ;)
 		var isOpen: Bool {
@@ -66,7 +68,7 @@ public class BannerController: NSObject {
 	// I was hoping to avoid this...
 	weak var scrollView: UIScrollView?
 	
-  var animationDuration: TimeInterval = 0.3
+  var animationDuration: TimeInterval = 0.5
   
 	public func install(on scrollView: UIScrollView) {
 		self.scrollView = scrollView
@@ -134,7 +136,7 @@ public class BannerController: NSObject {
 			let progress = height / desiredHeight
 			refreshController.expanded(by: progress)
 			
-		} else if actualOffset > 0 && !refreshState.isOpen {
+		} else if actualOffset > 0 && !refreshState.isOpen && refreshState != .relaxing {
 			// The scrollview is been pulled down, beyond it's "0" point
 			//let yPos = scrollView.safeAreaInsets.top + scrollView.contentOffset.y
 			// Calculate the desired height based on the expanded state.
@@ -152,13 +154,18 @@ public class BannerController: NSObject {
 			// We don't want to "retrigger" a beginRefresh if the resfresh is already "open"
 			if !refreshState.isOpen && wasDragged && !scrollView.isDragging && actualOffset >= desiredHeight {
 				// This can be used to animate the view open as well :)
+        refreshState = .relaxing
         
         scrollView.bounces = false
-        DispatchQueue.main.async {
-          self.beginRefreshing {
-            scrollView.bounces = true
-          }
+        self.beginRefreshing(offsetHeight: height) {
+          scrollView.bounces = true
         }
+//        let deadline = DispatchTime.now() + .seconds(1)
+//        DispatchQueue.main.asyncAfter(deadline: deadline) {
+//          self.beginRefreshing {
+//            scrollView.bounces = true
+//          }
+//        }
 			}
 		}
 	}
@@ -178,6 +185,8 @@ public class BannerController: NSObject {
     
     let yPos = scrollView.safeAreaInsets.top + scrollView.contentOffset.y
 
+    controller.view.frame = CGRect(x: 0, y: yPos, width: scrollView.bounds.width, height: value)
+
     // Need to set this first, otherwise it will effect the size of the view
     scrollView.contentInset.top = snapShot.insetTop + value
 
@@ -186,7 +195,7 @@ public class BannerController: NSObject {
     
   }
 
-  public func beginRefreshing(then: Complition? = nil) {
+  public func beginRefreshing(offsetHeight: CGFloat? = nil, then: Complition? = nil) {
 		guard let scrollView = scrollView, let controller = refreshController, !refreshState.isOpen else {
 			return
 		}
@@ -198,18 +207,19 @@ public class BannerController: NSObject {
 
 		// I had been setting this in the completion block of the animation, but
 		// it was causing this function to be recalled
-		self.refreshState = .open
+//    self.refreshState = .open
     
     // The frame size is set here as beginRefresh may be called externally
 		scrollView.bringSubviewToFront(refreshView)
 
-    let startHeight = refreshView.frame.height
+    let startHeight = offsetHeight ?? refreshView.frame.height
     refreshView.frame = CGRect(x: 0, y: yPos, width: scrollView.bounds.width, height: startHeight)
 
     // The expected range of change
     let range: ClosedRange<CGFloat> = min(startHeight, desiredHeight)...max(startHeight, desiredHeight)
     
     let snapShot = Snapshot(insetTop: scrollView.contentInset.top)
+    scrollView.contentInset.top = startHeight
 
     let animator = DurationAnimator(duration: animationDuration, timingFunction: .easeInEaseOut, ticker: { (animator, progress) in
       // Here we determine if the range should be reversed or not based on the difference between the
@@ -228,6 +238,7 @@ public class BannerController: NSObject {
                 at: 1.0,
                 reversed: startHeight > desiredHeight)
       controller.beginRefreshing()
+      self.refreshState = .open
       then?()
     }
     animator.start()
