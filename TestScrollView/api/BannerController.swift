@@ -172,20 +172,13 @@ public class BannerController: NSObject {
         // Relaxing into position, stops some of the other code from
         // interacting while the relax animation is running
         refreshState = .relaxing
-        print("Relaxing")
 
         // Set the frame size based on the last offset position.  This is an attempt to stop the UI from
         // flickering as the actualOffset is not the same as the offset when the user released the view
         refreshView.frame = CGRect(x: 0, y: yPos, width: scrollView.bounds.width, height: lastOffset ?? actualOffset)
         lastOffset = nil
 
-        // Stop the scroll view from bouncing, to help the animation run more smoothly
-        let shouldBounce = scrollView.bounces
-        scrollView.bounces = false
-        self.beginRefreshing {
-          // reset the bounce
-          scrollView.bounces = shouldBounce
-        }
+        self.beginRefreshing()
       } else {
         // The scrollview is been pulled down, beyond it's "0" point
         //let yPos = scrollView.safeAreaInsets.top + scrollView.contentOffset.y
@@ -228,53 +221,61 @@ public class BannerController: NSObject {
     
   }
 
-  public func beginRefreshing(offsetHeight: CGFloat? = nil, then: Complition? = nil) {
+  public func beginRefreshing(then: Complition? = nil) {
 		guard let scrollView = scrollView, let controller = refreshController, !refreshState.isOpen else {
 			return
 		}
     
 		let refreshView = controller.view
 		let desiredHeight = controller.desiredHeight
+    let startHeight = refreshView.frame.height
 
+    // Snapshot the current state
+    let snapShot = Snapshot(insetTop: scrollView.contentInset.top)
+    // Set the insets to the current height of the view
+    scrollView.contentInset.top = startHeight
+    
+    // Stop the scroll view from bouncing, to help the animation run more smoothly
+    let shouldBounce = scrollView.bounces
+    scrollView.bounces = false
+
+    // Calculate the y offset for the view
 		let yPos = scrollView.safeAreaInsets.top + scrollView.contentOffset.y
-
-		// I had been setting this in the completion block of the animation, but
-		// it was causing this function to be recalled
-//    self.refreshState = .open
     
     // The frame size is set here as beginRefresh may be called externally
 		scrollView.bringSubviewToFront(refreshView)
-
-    let startHeight = offsetHeight ?? refreshView.frame.height
     refreshView.frame = CGRect(x: 0, y: yPos, width: scrollView.bounds.width, height: startHeight)
 
     // The expected range of change
     let range: ClosedRange<CGFloat> = min(startHeight, desiredHeight)...max(startHeight, desiredHeight)
-    
-    let snapShot = Snapshot(insetTop: scrollView.contentInset.top)
-    scrollView.contentInset.top = startHeight
 
-    let animator = DurationAnimator(duration: animationDuration, timingFunction: .easeInEaseOut, ticker: { (animator, progress) in
-      // Here we determine if the range should be reversed or not based on the difference between the
-      // start and end of the range
-      self.size(controller: controller,
-                scrollView: scrollView,
-                snapShot: snapShot,
-                range: range,
-                at: progress,
-                reversed: startHeight > desiredHeight)
-    }) { (_) in
-      self.size(controller: controller,
-                scrollView: scrollView,
-                snapShot: snapShot,
-                range: range,
-                at: 1.0,
-                reversed: startHeight > desiredHeight)
-      controller.beginRefreshing()
-      self.refreshState = .open
-      then?()
-    }
-    animator.start()
+//    let delay = DispatchTime.now() + .seconds(5)
+//    DispatchQueue.main.asyncAfter(deadline: delay) {
+    
+      let animator = DurationAnimator(duration: self.animationDuration, timingFunction: .easeInEaseOut, ticker: { (animator, progress) in
+        // Here we determine if the range should be reversed or not based on the difference between the
+        // start and end of the range
+        self.size(controller: controller,
+                  scrollView: scrollView,
+                  snapShot: snapShot,
+                  range: range,
+                  at: progress,
+                  reversed: startHeight > desiredHeight)
+      }) { (_) in
+        self.size(controller: controller,
+                  scrollView: scrollView,
+                  snapShot: snapShot,
+                  range: range,
+                  at: 1.0,
+                  reversed: startHeight > desiredHeight)
+        controller.beginRefreshing()
+        self.refreshState = .open
+        // reset the bounce
+        scrollView.bounces = shouldBounce
+        then?()
+      }
+      animator.start()
+//    }
 		
 	}
 	
